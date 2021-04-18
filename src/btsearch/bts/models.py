@@ -43,7 +43,7 @@ class Location(models.Model):
         ordering = ['town']
 
     def __unicode__(self):
-        return u"{0}, {1}, {2}".format(self.region.name, self.town, self.address)
+        return "{0}, {1}, {2}".format(self.region.name, self.town, self.address)
 
     def has_location_hash(self):
         return self.location_hash != ''
@@ -157,7 +157,7 @@ class BaseStation(models.Model):
     )
 
     def __unicode__(self):
-        return u"{0} / {1} / {2}, {3}".format(
+        return "{0} / {1} / {2}, {3}".format(
             self.network.name,
             self.location.region.name,
             self.location.town,
@@ -183,7 +183,7 @@ class BaseStation(models.Model):
     address_name.admin_order_field = 'location__address'
 
     def location_coords(self):
-        return u"{coords.latitude},{coords.longitude}".format(coords=self.location)
+        return "{coords.latitude},{coords.longitude}".format(coords=self.location)
 
     def get_cells(self):
         qs = Cell.objects.filter(base_station=self)
@@ -256,7 +256,7 @@ class Cell(models.Model):
         verbose_name="UaFreq",
         default=0,
         blank=True,
-        help_text=u'Częstotliwość nośnej (kanał RF)',
+        help_text='Częstotliwość nośnej (kanał RF)',
     )
     lac = models.PositiveSmallIntegerField(
         verbose_name="LAC",
@@ -299,7 +299,7 @@ class Cell(models.Model):
     )
 
     def __unicode__(self):
-        return u"ID: {cell.id} / {cell.standard}{cell.band} / {cell.lac} / {cell.cid}".format(cell=self)
+        return "ID: {cell.id} / {cell.standard}{cell.band} / {cell.lac} / {cell.cid}".format(cell=self)
 
     def save(self, *args, **kwargs):
         self._sanitize_blank_values()
@@ -339,7 +339,7 @@ class Network(models.Model):
         ordering = ['code']
 
     def __unicode__(self):
-        return u'{network.name} ({network.code})'.format(network=self)
+        return '{network.name} ({network.code})'.format(network=self)
 
 
 class Region(models.Model):
@@ -360,12 +360,12 @@ class Region(models.Model):
 class BaseStationPermission(models.Model):
     base_station = models.ForeignKey(
         'BaseStation',
-        verbose_name=u'Base station',
+        verbose_name='Base station',
         related_name='permissions',
     )
     permission = models.ForeignKey(
         'uke.Permission',
-        verbose_name=u'UKE Permission',
+        verbose_name='UKE Permission',
         related_name='base_stations',
     )
     station_id = models.CharField(

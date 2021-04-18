@@ -81,7 +81,7 @@ class LocationDetailView(mixins.QuerysetFilterMixin, JSONResponseMixin, generic.
             'id': location.id,
             'latitude': location.latitude,
             'longitude': location.longitude,
-            'summary': unicode(location),
+            'summary': str(location),
             'info': response.render().rendered_content,
             'icon': services.MapIconService().get_icon_by_location(location),
         }
@@ -125,7 +125,7 @@ class UkeLocationDetailView(LocationDetailView):
             permissions_by_network[permission.network].append(permission)
 
         location_objects = []
-        for network in permissions_by_network.keys():
+        for network in list(permissions_by_network.keys()):
             supported = permissions.distinct().filter(operator__network=network). \
                 values('standard', 'band').exclude(standard='?', band='?')
             location_objects.append({

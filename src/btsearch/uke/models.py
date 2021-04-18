@@ -113,7 +113,7 @@ class Operator(models.Model):
     )
 
     def __unicode__(self):
-        return u'{0} ({1})'.format(self.operator_name, self.network.name)
+        return '{0} ({1})'.format(self.operator_name, self.network.name)
 
 
 class RawRecord(models.Model):

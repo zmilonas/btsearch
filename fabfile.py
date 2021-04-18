@@ -20,11 +20,11 @@ def _get_commit_id():
 
 def notify(msg):
     bar = '+' + '-' * (len(msg) + 2) + '+'
-    print green('')
-    print green(bar)
-    print green("| %s |" % msg)
-    print green(bar)
-    print green('')
+    print(green(''))
+    print(green(bar))
+    print(green("| %s |" % msg))
+    print(green(bar))
+    print(green(''))
 
 # Deployment tasks
 
@@ -54,7 +54,7 @@ def set_reference_to_deploy_from(branch):
 
     if env.build == 'test':
         # Allow a new tag to be set, or generate on automatically
-        print ''
+        print('')
         create_tag = prompt(red('Tag this release? [y/N] '))
         if create_tag.lower() == 'y':
             notify("Showing latest tags for reference")
@@ -65,7 +65,7 @@ def set_reference_to_deploy_from(branch):
             local('git push --tags')
         else:
             deploy_version = prompt(red('Build from a specific commit (useful for debugging)? [y/N] '))
-            print ''
+            print('')
             if deploy_version.lower() == 'y':
                 env.version = prompt(red('Choose commit to build from: '))
             else:
