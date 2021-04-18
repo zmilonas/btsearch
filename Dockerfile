@@ -3,7 +3,7 @@ FROM python:3.8
 ENV DEBIAN_FRONTEND=noninteractive \
      CONTAINER_USER=python
 
-RUN apt-get update && apt-get install -yqq default-libmysqlclient-dev
+RUN apt-get update && apt-get install -yqq mysql-server && apt-get install -yqq default-libmysqlclient-dev
 RUN sed '/st_mysql_options options;/a unsigned int reconnect;' /usr/include/mysql/mysql.h -i.bkp
 RUN mkdir /var/app
 WORKDIR /var/app
