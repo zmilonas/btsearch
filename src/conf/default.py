@@ -122,11 +122,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 # # Make sure to use a trailing slash.
 # # Examples: "http://foo.com/static/admin/", "/static/admin/".
 # ADMIN_MEDIA_PREFIX = '/static/admin/'
-
+#
 # TEMPLATE_DIRS = (
-#     location('templates'),
+#     location('src/templates'),
 # )
-
+#
 
 def create_logging_dict(root):
     """

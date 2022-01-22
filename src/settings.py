@@ -6,6 +6,7 @@ import os
 # If you want custom settings, create a new settings file (eg conf.barry) and
 # import * from conf.local then apply your overrides.
 conf_module = os.environ.get('DJANGO_CONF', 'conf.local')
+
 try:
     module = __import__(conf_module, globals(), locals(), ['*'])
 except ImportError:

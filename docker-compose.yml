@@ -13,7 +13,7 @@ services:
     build: .
     volumes:
       - .:/var/app
-    command: ./docker-entrypoint.sh
+    entrypoint: ./docker-entrypoint.sh
     environment:
       - POSTGRES_NAME=postgres
       - POSTGRES_USER=postgres

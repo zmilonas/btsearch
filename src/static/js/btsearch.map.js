@@ -15,7 +15,7 @@ var core = {
         center: new google.maps.LatLng(52.069245, 19.480193),
         streetViewControl: false,
         scaleControl: true,
-        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        mapTypeId: "OSM",
         mapTypeControlOptions: {
             style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
             position: google.maps.ControlPosition.TOP_RIGHT
@@ -38,6 +38,7 @@ var core = {
 
     init: function(mapCanvas, initParams) {
         this.map = new google.maps.Map(mapCanvas, this.mapParams);
+        this.map.mapTypes.set("OSM", new google.maps.ImageMapType({ getTileUrl: function(coord, zoom) { var tilesPerGlobe = 1 << zoom; var x = coord.x % tilesPerGlobe; if (x < 0) { x = tilesPerGlobe+x; } return "https://tile.openstreetmap.org/" + zoom + "/" + x + "/" + coord.y + ".png"; }, tileSize: new google.maps.Size(256, 256), name: "OpenStreetMap", maxZoom: 18 }));
         this.geocoder = new google.maps.Geocoder();
         this.markers = [];
         this.initParams = initParams;
@@ -45,18 +46,18 @@ var core = {
         ui.createMapControls(this.map);
     },
 
-    initMapBounds: function() {
+    initMapBounds: function () {
         if (this.initParams.zoom && (this.initParams.bounds || this.initParams.center)) {
             if (this.initParams.center) {
                 var centerCoords = this.initParams.center.split(',');
                 this.map.setCenter(
-                    new google.maps.LatLng(centerCoords[0],centerCoords[1])
+                    new google.maps.LatLng(centerCoords[0], centerCoords[1])
                 );
             } else if (this.initParams.bounds) {
                 var boundsCoords = this.initParams.bounds.split(',');
                 this.map.panToBounds(new google.maps.LatLngBounds(
-                    new google.maps.LatLng(boundsCoords[0],boundsCoords[1]),
-                    new google.maps.LatLng(boundsCoords[2],boundsCoords[3])
+                    new google.maps.LatLng(boundsCoords[0], boundsCoords[1]),
+                    new google.maps.LatLng(boundsCoords[2], boundsCoords[3])
                 ));
             }
             this.map.setZoom(this.initParams.zoom);
@@ -65,17 +66,17 @@ var core = {
         }
     },
 
-    userLocationAutodetect: function() {
+    userLocationAutodetect: function () {
         // Reference: https://developers.google.com/maps/articles/geolocation
         if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(position) {
+            navigator.geolocation.getCurrentPosition(function (position) {
                 var detectedLatLng = new google.maps.LatLng(
                     position.coords.latitude,
                     position.coords.longitude
                 );
                 var boundsOfPoland = new google.maps.LatLngBounds(
-                    new google.maps.LatLng(49.253465,13.710938),
-                    new google.maps.LatLng(55.065787,24.268799)
+                    new google.maps.LatLng(49.253465, 13.710938),
+                    new google.maps.LatLng(55.065787, 24.268799)
                 );
                 // Only pan to auto-detected location when it is within Poland
                 if (boundsOfPoland.contains(detectedLatLng)) {
@@ -84,38 +85,38 @@ var core = {
                 } else {
                     console.log('Autodetected user location outside of Poland');
                 }
-            }, function() {
+            }, function () {
                 console.log('Error autodetecting location');
             });
         }
     },
 
-    bindMapEvents: function() {
+    bindMapEvents: function () {
         events.mapIdle(this.map);
         events.mapClick(this.map);
         events.mouseMove(this.map);
     },
 
-    clearAllOverlays: function() {
+    clearAllOverlays: function () {
         this.clearInfoWindow();
         this.clearSelectedMarker();
         this.clearMarkers();
     },
 
-    clearInfoWindow: function() {
+    clearInfoWindow: function () {
         if (this.infoWindow) {
             this.infoWindow.setMap(null);
         }
     },
 
-    clearSelectedMarker: function() {
+    clearSelectedMarker: function () {
         if (this.selectedMarker !== null) {
             this.selectedMarker.setMap(null);
             this.selectedMarker = null;
         }
     },
 
-    clearMarkers: function() {
+    clearMarkers: function () {
         // Clear selected marker if it is out of current map bounds
         if (this.selectedMarker !== null &&
             this.map.getBounds().contains(this.selectedMarker.getPosition()) === false) {
@@ -133,7 +134,7 @@ var core = {
         this.markers = [];
     },
 
-    createMarker: function(latlng, icon) {
+    createMarker: function (latlng, icon) {
         // Reuse selected marker if possible instead of creating a new one
         // (this is mainly to preserve opened infoWindow over selected marker)
         if (this.selectedMarker !== null &&
@@ -156,7 +157,7 @@ var core = {
      * Wrapper function around remote request to load locations for given
      * map bounds and filters.
      */
-    loadLocations: function() {
+    loadLocations: function () {
         mapStatus.wait();
         if (this.map.getZoom() >= 11) {
             mapStatus.clearZoomWarning();
@@ -179,7 +180,7 @@ var core = {
      *
      * @param locations
      */
-    displayLocations: function(data) {
+    displayLocations: function (data) {
         this.clearMarkers();
         locations = data.objects;
         for (var i in locations) {
@@ -202,7 +203,7 @@ var core = {
      * @param locationData
      * @param marker
      */
-    displayLocationInfo: function(locationData, marker) {
+    displayLocationInfo: function (locationData, marker) {
         this.clearInfoWindow();
         // this.clearSelectedMarker(); -- don't make the marker disappear
         this.infoWindow = new google.maps.InfoWindow({
@@ -214,13 +215,13 @@ var core = {
     },
 
     // @TODO: request.searchLocation -> callback: ui.displaySearchResult (?)
-    searchLocation: function(query) {
+    searchLocation: function (query) {
         $('#control-panel-search-results').html('');
         params = {
             'address': query,
             'region': 'pl'
         };
-        this.geocoder.geocode(params, function(results, status) {
+        this.geocoder.geocode(params, function (results, status) {
             if (status == google.maps.GeocoderStatus.OK) {
                 core.displaySearchResult(results[0].geometry.location.lat(), results[0].geometry.location.lng());
                 if (results.length > 1) {
@@ -236,7 +237,7 @@ var core = {
                     ui.activatePanel($('#control-panel-search-results'), 'Rezultat wyszukiwania');
 
                     // Attach event to search results
-                    $('.search-result-item').on('click', function(){
+                    $('.search-result-item').on('click', function () {
                         core.displaySearchResult($(this).data('latitude'), $(this).data('longitude'));
                     });
                 }
@@ -246,7 +247,7 @@ var core = {
         });
     },
 
-    displaySearchResult: function(lat, lng) {
+    displaySearchResult: function (lat, lng) {
         latlng = new google.maps.LatLng(lat, lng);
         core.map.setCenter(latlng);
         core.map.setZoom(15);
@@ -260,21 +261,21 @@ var core = {
  * Object to handle map events
  */
 var events = {
-    mapIdle: function(map) {
-        google.maps.event.addListener(map, 'idle', function() {
+    mapIdle: function (map) {
+        google.maps.event.addListener(map, 'idle', function () {
             core.loadLocations();
         });
     },
 
-    mapClick: function(map) {
-        google.maps.event.addListener(map, 'click', function() {
+    mapClick: function (map) {
+        google.maps.event.addListener(map, 'click', function () {
             core.clearInfoWindow();
             ui.resetPanel();
         });
     },
 
-    locationClick: function(marker, location) {
-        google.maps.event.addListener(marker, 'click', function() {
+    locationClick: function (marker, location) {
+        google.maps.event.addListener(marker, 'click', function () {
             if (core.selectedMarker == marker) {
                 core.clearInfoWindow();
                 ui.resetPanel();
@@ -285,26 +286,26 @@ var events = {
         });
     },
 
-    locationRightClick: function(marker) {
-        google.maps.event.addListener(marker, 'rightclick', function(){
+    locationRightClick: function (marker) {
+        google.maps.event.addListener(marker, 'rightclick', function () {
             distanceService.toggle(marker.getPosition());
         });
-        google.maps.event.addListener(marker, 'mouseover', function() {
+        google.maps.event.addListener(marker, 'mouseover', function () {
             if (!distanceService.startPoint) {
                 $('#status-panel-distance-info').show();
             }
         });
     },
 
-    infoWindowClose: function(infoWindow) {
-        google.maps.event.addListener(infoWindow, 'closeclick', function() {
+    infoWindowClose: function (infoWindow) {
+        google.maps.event.addListener(infoWindow, 'closeclick', function () {
             core.clearInfoWindow();
             ui.resetPanel();
         });
     },
 
-    mouseMove: function(map) {
-        google.maps.event.addListener(map, 'mousemove', function(event) {
+    mouseMove: function (map) {
+        google.maps.event.addListener(map, 'mousemove', function (event) {
             distanceService.draw(event.latLng);
             mapStatus.updateDistance();
             mapStatus.updateGpsLocation(event.latLng);
@@ -312,8 +313,8 @@ var events = {
         });
     },
 
-    distanceCancel: function(polyline) {
-        google.maps.event.addListener(polyline, 'rightclick', function(event) {
+    distanceCancel: function (polyline) {
+        google.maps.event.addListener(polyline, 'rightclick', function (event) {
             distanceService.reset();
         });
     }
@@ -325,7 +326,7 @@ var distanceService = {
     distance: 0,
     heading: null,
 
-    reset: function() {
+    reset: function () {
         this.startPoint = null;
         if (this.polyline) {
             this.polyline.setMap(null);
@@ -334,7 +335,7 @@ var distanceService = {
         this.distance = 0;
     },
 
-    toggle: function(startPoint) {
+    toggle: function (startPoint) {
         if (this.startPoint) {
             this.reset();
         } else {
@@ -349,7 +350,7 @@ var distanceService = {
         }
     },
 
-    draw: function(endPoint) {
+    draw: function (endPoint) {
         if (this.polyline) {
             path = [
                 this.startPoint,
@@ -368,28 +369,28 @@ var distanceService = {
  * Object to handle XMLHttpRequest requests to web server
  */
 var requests = {
-    getLocations: function(mapBounds, filters) {
+    getLocations: function (mapBounds, filters) {
         $.ajax({
             url: "/map/" + filters.dataSource + "/?bounds=" + mapBounds.toUrlValue() + filters.toUrlValue(),
             dataType: "json",
             headers: {
                 Accept: "application/json"
             },
-            success: function(data) {
+            success: function (data) {
                 core.displayLocations(data);
                 ui.updateUrl();
             }
         });
     },
 
-    getLocationInfo: function(marker, locationId, filters) {
+    getLocationInfo: function (marker, locationId, filters) {
         $.ajax({
             url: "/map/" + filters.dataSource + "/" + locationId + "/?" + filters.toUrlValue(),
             dataType: "json",
             headers: {
                 Accept: "application/json"
             },
-            success: function(data) {
+            success: function (data) {
                 core.displayLocationInfo(data, marker);
                 $('a.location-info').fancybox({
                     'type': 'ajax'
@@ -420,10 +421,10 @@ var requests = {
     },
     */
 
-    setControlPanelContent: function(panel) {
+    setControlPanelContent: function (panel) {
         $.ajax({
             url: "/map/ui/control_panel/",
-            success: function(data) {
+            success: function (data) {
                 panel.innerHTML = data;
 
                 // Wait for panel elements to attach to DOM properly
@@ -432,7 +433,7 @@ var requests = {
                 // https://github.com/zoyalab/zoyalab.com/blob/master/js/main.js#L20
                 //
                 // TODO: Using setInterval certainly smells shit. Fix it.
-                inv = setInterval(function(){
+                inv = setInterval(function () {
                     if (ui.ready()) {
                         core.bindMapEvents();
                         ui.bindControlPanelEvents();
@@ -445,19 +446,19 @@ var requests = {
         });
     },
 
-    setStatusPanelContent: function(panel) {
+    setStatusPanelContent: function (panel) {
         $.ajax({
             url: "/map/ui/status_panel/",
-            success: function(data) {
+            success: function (data) {
                 panel.innerHTML = data;
             }
         });
     },
 
-    setAdPanelContent: function(panel) {
+    setAdPanelContent: function (panel) {
         $.ajax({
             url: "/map/ui/ad_panel/",
-            success: function(data) {
+            success: function (data) {
                 panel.innerHTML = data;
             }
         });
@@ -469,8 +470,8 @@ var requests = {
  */
 var ui = {
 
-    pushStateSupport: function(){
-        return (typeof(window.onpopstate) != 'undefined');
+    pushStateSupport: function () {
+        return (typeof (window.onpopstate) != 'undefined');
     },
 
     /**
@@ -478,11 +479,11 @@ var ui = {
      *
      * @returns {Boolean}
      */
-    ready: function() {
+    ready: function () {
         uiElementsToCheck = ['control-panel-container',
-                             'status-panel-container',
-                             'search-form',
-                             'network-filter'];
+            'status-panel-container',
+            'search-form',
+            'network-filter'];
 
         for (var i in uiElementsToCheck) {
             if (null === document.getElementById(uiElementsToCheck[i])) return false;
@@ -490,14 +491,14 @@ var ui = {
         return true;
     },
 
-    createMapControls: function(map) {
+    createMapControls: function (map) {
         this.createControlPanel(map);
         this.createStatusPanel(map);
         this.createWaitingLabel(map);
         this.createAdPanel(map);
     },
 
-    createControlPanel: function(map) {
+    createControlPanel: function (map) {
         var panel = document.createElement('DIV');
         panel.id = 'control-panel-container';
         map.controls[google.maps.ControlPosition.TOP_LEFT].push(panel);
@@ -505,7 +506,7 @@ var ui = {
         requests.setControlPanelContent(panel);
     },
 
-    createStatusPanel: function(map) {
+    createStatusPanel: function (map) {
         var panel = document.createElement('DIV');
         panel.id = 'status-panel-container';
         map.controls[google.maps.ControlPosition.TOP_LEFT].push(panel);
@@ -513,7 +514,7 @@ var ui = {
         requests.setStatusPanelContent(panel);
     },
 
-    createWaitingLabel: function(map) {
+    createWaitingLabel: function (map) {
         var label = document.createElement('DIV');
         label.id = 'waiting-label-container';
         label.className = 'label label-important';
@@ -521,7 +522,7 @@ var ui = {
         map.controls[google.maps.ControlPosition.TOP_RIGHT].push(label);
     },
 
-    createAdPanel: function(map) {
+    createAdPanel: function (map) {
         // Reference: https://developers.google.com/maps/documentation/javascript/advertising
         var adUnitDiv = document.createElement('div');
         adUnitDiv.id = 'googlead-panel-container';
@@ -535,9 +536,9 @@ var ui = {
         new google.maps.adsense.AdUnit(adUnitDiv, adUnitOptions);
     },
 
-    bindControlPanelEvents: function() {
+    bindControlPanelEvents: function () {
         // Search form submission
-        $('#search-form').submit(function(){
+        $('#search-form').submit(function () {
             query = $('#search-box').val();
             if (query !== '') {
                 core.searchLocation(query);
@@ -547,26 +548,26 @@ var ui = {
         });
 
         // Network filter dropdown change
-        $('#network-filter').change(function(){
+        $('#network-filter').change(function () {
             ui.resetMap();
         });
 
         // Network standards filter
-        $('.standard-filter').click(function(){
+        $('.standard-filter').click(function () {
             ui.resetMap();
         });
 
         // Network standards filter
-        $('.band-filter').click(function(){
+        $('.band-filter').click(function () {
             ui.resetMap();
         });
 
-        $('.timedelta-filter').click(function(){
+        $('.timedelta-filter').click(function () {
             ui.resetMap();
         });
 
         // Data source filter
-        $('input[name=data-source]').change(function(){
+        $('input[name=data-source]').change(function () {
             ui.resetMap();
             if ($(this).val() == 'locations') {
                 $('#bts-last-update-date').show();
@@ -577,7 +578,7 @@ var ui = {
             }
         });
 
-        $('#control-panel-header-icon').click(function(){
+        $('#control-panel-header-icon').click(function () {
             ui.toggleControlPanel();
         });
 
@@ -589,7 +590,7 @@ var ui = {
         autocomplete.bindTo('bounds', core.map);
     },
 
-    activatePanel: function(panelObject, panelTitle) {
+    activatePanel: function (panelObject, panelTitle) {
         $('#control-panel-filters').hide();
         $('#control-panel-search-results').hide();
         $('#control-panel-location-info').hide();
@@ -597,21 +598,21 @@ var ui = {
         panelObject.show();
     },
 
-    resetPanel: function() {
+    resetPanel: function () {
         mainPanelObject = $('#control-panel-filters');
         if (!mainPanelObject.is(':visible')) {
             this.activatePanel(mainPanelObject, 'Filtr lokalizacji');
         }
     },
 
-    resetMap: function() {
+    resetMap: function () {
         core.selectedMarker = null;
         google.maps.event.trigger(core.map, 'idle');
     },
 
-    toggleControlPanel: function() {
+    toggleControlPanel: function () {
         $('#control-panel-body').toggle({
-            complete: function() {
+            complete: function () {
                 // This little hack is needed to maintain scrollability of the
                 // control panel when the viewport's height is too low
                 var visible = $(this).is(':visible');
@@ -624,7 +625,7 @@ var ui = {
         });
     },
 
-    updateUrl: function() {
+    updateUrl: function () {
         if (!this.pushStateSupport) return;
         stateObject = {
             dataSource: filters.dataSource,
@@ -647,28 +648,28 @@ var filters = {
     timedelta: null,
     dataSource: 'locations',
 
-    init: function(params) {
+    init: function (params) {
         if (params.network) {
             $('#network-filter').val(params.network);
         }
         if (params.dataSource) {
-            $('input[name=data-source][value='+params.dataSource+']').prop('checked', true);
+            $('input[name=data-source][value=' + params.dataSource + ']').prop('checked', true);
         }
         if (params.standards) {
             var standards = params.standards.split(',');
             for (var i in standards) {
-                $('#standard-filter-'+standards[i]).prop('checked', true);
+                $('#standard-filter-' + standards[i]).prop('checked', true);
             }
         }
         if (params.bands) {
             var bands = params.bands.split(',');
             for (var j in bands) {
-                $('#band-filter-'+bands[j]).prop('checked', true);
+                $('#band-filter-' + bands[j]).prop('checked', true);
             }
         }
     },
 
-    get: function() {
+    get: function () {
         this.setNetworkFilter();
         this.setStandardFilter();
         this.setBandFilter();
@@ -677,36 +678,36 @@ var filters = {
         return this;
     },
 
-    setNetworkFilter: function() {
+    setNetworkFilter: function () {
         var selectedNetwork = $('#network-filter').val();
         this.network = (selectedNetwork != '-1') ? selectedNetwork.split(',') : [];
     },
 
-    setStandardFilter: function() {
+    setStandardFilter: function () {
         this.standard = [];
-        $('.standard-filter:checked').each(function(index, element){
+        $('.standard-filter:checked').each(function (index, element) {
             filters.standard.push(element.value);
         });
     },
 
-    setBandFilter: function() {
+    setBandFilter: function () {
         this.band = [];
-        $('.band-filter:checked').each(function(index, element){
+        $('.band-filter:checked').each(function (index, element) {
             filters.band.push(element.value);
         });
     },
 
-    setDataSourceFilter: function() {
+    setDataSourceFilter: function () {
         //this.dataSource = $('#data-source-filter').val();
         this.dataSource = $('input[name=data-source]:checked').val();
     },
 
-    setTimedeltaFilter: function() {
+    setTimedeltaFilter: function () {
         this.timedelta = null;
         this.timedelta = $('#timedelta-filter:checked').val();
     },
 
-    toUrlValue: function() {
+    toUrlValue: function () {
         var url = '';
         for (var n in this.network) {
             url += '&network=' + this.network[n];
@@ -729,7 +730,7 @@ var filters = {
 
 var mapStatus = {
 
-    getLatLngExtendedInfo: function(point) {
+    getLatLngExtendedInfo: function (point) {
         var lat = point.lat().toFixed(6);
         var lng = point.lng().toFixed(6);
         var lat2 = utils.deg2dms(lat, 'lat');
@@ -737,17 +738,17 @@ var mapStatus = {
         return lat + '&nbsp;' + lng + '&nbsp;&hArr;&nbsp;' + lat2 + '&nbsp;' + lng2;
     },
 
-    updateAll: function() {
+    updateAll: function () {
         this.updateZoom();
         this.updateLocationsCount();
         this.updateDataSource();
     },
 
-    updateZoom: function() {
+    updateZoom: function () {
         $('#status-zoom').html(core.map.getZoom());
     },
 
-    updateLocationsCount: function() {
+    updateLocationsCount: function () {
         var locationsCount = core.markers.length;
         $('#status-locations-count').html(locationsCount);
         if (locationsCount >= 500) {
@@ -757,16 +758,16 @@ var mapStatus = {
         }
     },
 
-    updateDataSource: function() {
+    updateDataSource: function () {
         source = filters.dataSource == 'locations' ? 'BTSearch' : 'UKE';
         $('#status-data-source').html(source);
     },
 
-    updateGpsLocation: function(point) {
+    updateGpsLocation: function (point) {
         $('#status-gps').html(this.getLatLngExtendedInfo(point));
     },
 
-    updateDistance: function() {
+    updateDistance: function () {
         var distance = distanceService.distance.toFixed(0);
         if (distance > 0) {
             $('#status-panel-distance').show();
@@ -786,7 +787,7 @@ var mapStatus = {
         }
     },
 
-    wait: function() {
+    wait: function () {
         $('#waiting-label-container').show();
         $('#map-search-submit').attr('disabled', true);
         $('#network-filter').attr('disabled', true);
@@ -796,7 +797,7 @@ var mapStatus = {
         $('.timedelta-filter').attr('disabled', true);
     },
 
-    waitDone: function() {
+    waitDone: function () {
         $('#map-search-submit').removeAttr('disabled');
         $('#network-filter').removeAttr('disabled');
         $('#data-source-filter').removeAttr('disabled');
@@ -806,25 +807,25 @@ var mapStatus = {
         $('#waiting-label-container').hide();
     },
 
-    displayZoomWarning: function() {
+    displayZoomWarning: function () {
         $('#status-zoom').css('color', 'red');
         $('#status-zoom').css('font-weight', 'bold');
         $('#status-zoom').attr('title', 'Lokalizacje są wyświetlane od poziomu zbliżenia 11 wzwyż');
     },
 
-    clearZoomWarning: function() {
+    clearZoomWarning: function () {
         $('#status-zoom').css('color', 'black');
         $('#status-zoom').css('font-weight', 'normal');
         $('#status-zoom').attr('title', '');
     },
 
-    displayLocationCountWarning: function() {
+    displayLocationCountWarning: function () {
         $('#status-locations-count').css('color', 'red');
         $('#status-locations-count').css('font-weight', 'bold');
         $('#status-locations-count').attr('title', 'Liczba wyświetlonych lokalizacji ograniczona');
     },
 
-    clearLocationCountWarning: function() {
+    clearLocationCountWarning: function () {
         $('#status-locations-count').css('color', 'black');
         $('#status-locations-count').css('font-weight', 'normal');
         $('#status-locations-count').attr('title', '');
@@ -833,7 +834,7 @@ var mapStatus = {
 
 var utils = {
     // Credits: Krzysiek Niemczyk ;)
-    deg2dms: function(coordinate, latlng) {
+    deg2dms: function (coordinate, latlng) {
         // jeśli nie określono argumentu to nie wykonujemy funkcji
         if (latlng != 'lat' && latlng != 'lng') return;
 
@@ -873,52 +874,52 @@ var utils = {
     }*/
 };
 
-$(document).bind('keypress', 'g', function(){
+$(document).bind('keypress', 'g', function () {
     $('#standard-filter-gsm').prop('checked', !$('#standard-filter-gsm').prop('checked'));
     ui.resetMap();
 });
 
-$(document).bind('keypress', 'u', function(){
+$(document).bind('keypress', 'u', function () {
     $('#standard-filter-umts').prop('checked', !$('#standard-filter-umts').prop('checked'));
     ui.resetMap();
 });
 
-$(document).bind('keypress', 'l', function(){
+$(document).bind('keypress', 'l', function () {
     $('#standard-filter-lte').prop('checked', !$('#standard-filter-lte').prop('checked'));
     ui.resetMap();
 });
 
-$(document).bind('keypress', 'c', function(){
+$(document).bind('keypress', 'c', function () {
     $('#standard-filter-cdma').prop('checked', !$('#standard-filter-cdma').prop('checked'));
     ui.resetMap();
 });
 
-$(document).bind('keypress', '5', function(){
+$(document).bind('keypress', '5', function () {
     $('#standard-filter-5g').prop('checked', !$('#standard-filter-5g').prop('checked'));
     ui.resetMap();
 });
 
-$(document).bind('keypress', 'i', function(){
+$(document).bind('keypress', 'i', function () {
     $('#standard-filter-iot').prop('checked', !$('#standard-filter-iot').prop('checked'));
     ui.resetMap();
 });
 
-$(document).bind('keypress', '9', function(){
+$(document).bind('keypress', '9', function () {
     $('#band-filter-900').prop('checked', !$('#band-filter-900').prop('checked'));
     ui.resetMap();
 });
 
-$(document).bind('keypress', '1', function(){
+$(document).bind('keypress', '1', function () {
     $('#band-filter-1800').prop('checked', !$('#band-filter-1800').prop('checked'));
     ui.resetMap();
 });
 
-$(document).bind('keypress', '2', function(){
+$(document).bind('keypress', '2', function () {
     $('#band-filter-2100').prop('checked', !$('#band-filter-2100').prop('checked'));
     ui.resetMap();
 });
 
-$(document).bind('keypress', '8', function(){
+$(document).bind('keypress', '8', function () {
     $('#band-filter-800').prop('checked', !$('#band-filter-800').prop('checked'));
     ui.resetMap();
 });

@@ -1,7 +1,7 @@
-FROM python:2
+FROM python:3.7
 
 ENV PYTHONUNBUFFERED 1
-RUN apt update && apt remove -yqq python3 --autoremove
+RUN apt-get update && apt-get install -yqq python3-psycopg2
 RUN pip install --upgrade pip
 RUN mkdir /var/app
 WORKDIR /var/app
