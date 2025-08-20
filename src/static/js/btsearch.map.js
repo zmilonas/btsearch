@@ -38,11 +38,21 @@ var core = {
 
     init: function(mapCanvas, initParams) {
         this.map = new google.maps.Map(mapCanvas, this.mapParams);
-	this.map.mapTypes.set("OSM", new google.maps.ImageMapType({ getTileUrl: function(coord, zoom) { var tilesPerGlobe = 1 << zoom; var x = coord.x % tilesPerGlobe; if (x < 0) { x = tilesPerGlobe+x; } return "https://tile.openstreetmap.org/" + zoom + "/" + x + "/" + coord.y + ".png"; }, tileSize: new google.maps.Size(256, 256), name: "OpenStreetMap", maxZoom: 18 }))
+        this.map.mapTypes.set("OSM", new google.maps.ImageMapType({
+            getTileUrl: function (coord, zoom) {
+                var tilesPerGlobe = 1 << zoom;
+                var x = coord.x % tilesPerGlobe;
+                if (x < 0) {
+                    x = tilesPerGlobe + x;
+                }
+                return "https://tile.openstreetmap.org/" + zoom + "/" + x + "/" + coord.y + ".png";
+            }, tileSize: new google.maps.Size(256, 256), name: "OpenStreetMap", maxZoom: 18
+        }))
         this.geocoder = new google.maps.Geocoder();
         this.markers = [];
         this.initParams = initParams;
         this.initMapBounds();
+        this.addOSMAttribution();
         ui.createMapControls(this.map);
     },
 
@@ -64,6 +74,19 @@ var core = {
         } else {
             this.userLocationAutodetect();
         }
+    },
+
+    addOSMAttribution: function() {
+        var attributionDiv = document.createElement('div');
+        attributionDiv.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+        attributionDiv.style.fontSize = '11px';
+        attributionDiv.style.fontFamily = 'Arial, sans-serif';
+        attributionDiv.style.padding = '2px 4px';
+        attributionDiv.style.margin = '0';
+        attributionDiv.style.color = '#000';
+        attributionDiv.innerHTML = '© <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors';
+
+        this.map.controls[google.maps.ControlPosition.BOTTOM_RIGHT].push(attributionDiv);
     },
 
     userLocationAutodetect: function() {
